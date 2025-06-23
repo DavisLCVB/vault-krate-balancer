@@ -1,0 +1,29 @@
+{
+  "name": "vault-krate-balancer",
+  "version": "1.0.0",
+  "description": "Balancer for Vault-Krate service",
+  "license": "ISC",
+  "author": "Davis",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node -r tsconfig-paths/register build/server.js",
+    "dev": "ts-node src/server.ts"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.3",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.0",
+    "axios": "^1.10.0",
+    "dotenv": "^16.5.0",
+    "express": "5.1.0",
+    "http-proxy-middleware": "^3.0.5",
+    "module-alias": "^2.2.3"
+  }
+}
