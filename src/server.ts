@@ -8,9 +8,9 @@ import Proxy from "./proxy";
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-app.use(express.json({ limit: '100MB' }));
+/* app.use(express.json({ limit: '100MB' }));
 app.use(express.urlencoded({ limit: '100MB', extended: true }));
-
+ */
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
