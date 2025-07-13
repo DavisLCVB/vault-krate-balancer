@@ -188,16 +188,22 @@ class Proxy {
         if (specificInstance) {
           target = specificInstance;
           if (this.config.enableLogging) {
-            console.log(`Routing file ${operation} ${fileId} to specific instance: ${target.instance.id}`);
+            console.log(`Routing file ${operation} ${fileId} to specific instance: ${target.instance.id} (${target.instance.assigned_url})`);
           }
         } else {
           if (this.config.enableLogging) {
             console.warn(`Could not find specific instance for file ${fileId}, falling back to load balancer`);
           }
           target = await this.getServerWithRetry();
+          if (this.config.enableLogging) {
+            console.log(`Load balancer selected instance: ${target.instance.id} (${target.instance.assigned_url})`);
+          }
         }
       } else {
         target = await this.getServerWithRetry();
+        if (this.config.enableLogging) {
+          console.log(`Load balancer selected instance: ${target.instance.id} (${target.instance.assigned_url})`);
+        }
       }
       
       req.headers["X-Forwarded-For"] = target.instance.id;
