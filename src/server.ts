@@ -14,7 +14,7 @@ app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["content-type", "authorization", "accept", "origin", "user-agent", "x-requested-with"],
+  allowedHeaders: "*",
   maxAge: 3600
 }));
 
