@@ -7,8 +7,14 @@
   "type": "commonjs",
   "main": "src/server.js",
   "scripts": {
+    "build": "tsc",
     "start": "node -r tsconfig-paths/register build/server.js",
-    "dev": "ts-node src/server.ts"
+    "dev": "ts-node -r tsconfig-paths/register src/server.ts",
+    "clean": "rm -rf build",
+    "prebuild": "npm run clean",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'No linting configured'",
+    "test": "echo 'No tests configured'"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
