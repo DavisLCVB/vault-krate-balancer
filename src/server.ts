@@ -6,7 +6,7 @@ import Balancer from "./balancer";
 import Proxy from "./proxy";
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = parseInt(process.env.PORT || '8000', 10);
 
 /* app.use(express.json({ limit: '100MB' }));
 app.use(express.urlencoded({ limit: '100MB', extended: true }));
@@ -27,7 +27,7 @@ app.use((req, res, next) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Vault-Krate Balancer running on port ${PORT}`);
   });
 }
