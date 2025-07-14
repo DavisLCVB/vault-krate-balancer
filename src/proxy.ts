@@ -121,7 +121,7 @@ class Proxy {
     }
   }
 
-  private createProxyOptions(target: string, instanceId: string): any {
+  private createProxyOptions(target: string, instanceId: string, instance?: any): any {
     return {
       target,
       changeOrigin: true,
@@ -138,19 +138,80 @@ class Proxy {
         error: (err: any, req: any, res: any) => {
           this.failedInstances.add(instanceId);
           
+          // Enhanced error logging with server details
+          const serverInstance = instance;
+          const errorDetails = {
+            error: err.message,
+            error_code: err.code,
+            url: req.url,
+            method: req.method,
+            server_id: instanceId,
+            server_identifier: serverInstance?.instance_identifier || 'unknown',
+            server_url: serverInstance?.assigned_url || 'unknown',
+            provider: serverInstance?.provider || 'unknown',
+            timestamp: new Date().toISOString()
+          };
+          
           if (this.config.enableLogging) {
-            console.error(`Proxy error for instance ${instanceId}:`, {
-              error: err.message,
-              url: req.url,
-              method: req.method,
+            console.error(`💥 Proxy error for server ${serverInstance?.instance_identifier || instanceId}:`, errorDetails);
+            console.error(`🔥 Error type: ${err.code || 'UNKNOWN'}`);
+            console.error(`🌐 Connection details:`, {
+              target_url: serverInstance?.assigned_url,
+              error_message: err.message,
+              system_error: err.syscall ? `${err.syscall} ${err.code}` : 'N/A'
             });
           }
 
           if (res && typeof res.writeHead === 'function' && !res.headersSent) {
+            // Determine error type for better user feedback
+            let errorType = 'connection_error';
+            let userMessage = 'The backend server is temporarily unavailable';
+            
+            if (err.code === 'ECONNREFUSED') {
+              errorType = 'connection_refused';
+              userMessage = 'Connection refused by backend server';
+            } else if (err.code === 'ETIMEDOUT') {
+              errorType = 'timeout';
+              userMessage = 'Backend server response timeout';
+            } else if (err.code === 'ENOTFOUND') {
+              errorType = 'dns_error';
+              userMessage = 'Backend server address not found';
+            } else if (err.code === 'ECONNRESET') {
+              errorType = 'connection_reset';
+              userMessage = 'Connection reset by backend server';
+            }
+
             res.writeHead(502, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
               error: "Bad Gateway",
-              message: "The server is temporarily unavailable",
+              message: userMessage,
+              error_type: errorType,
+              failed_server: {
+                server_id: instanceId,
+                server_identifier: serverInstance?.instance_identifier || 'unknown',
+                server_url: serverInstance?.assigned_url || 'unknown',
+                provider: serverInstance?.provider || 'unknown'
+              },
+              error_details: {
+                original_error: err.message,
+                error_code: err.code,
+                requested_url: req.url,
+                method: req.method,
+                syscall: err.syscall || null
+              },
+              troubleshooting: {
+                possible_causes: [
+                  'Backend server is down or not responding',
+                  'Network connectivity issues',
+                  'Server overload or maintenance',
+                  'Configuration problems'
+                ],
+                next_steps: [
+                  'The request will be automatically retried with another server if available',
+                  'Check server status in admin dashboard',
+                  'Contact system administrator if problem persists'
+                ]
+              },
               timestamp: new Date().toISOString(),
             }));
           }
@@ -216,7 +277,8 @@ class Proxy {
 
       const proxyOptions = this.createProxyOptions(
         target.instance.assigned_url,
-        target.instance.id
+        target.instance.id,
+        target.instance
       );
 
       const proxy = createProxyMiddleware(proxyOptions);
